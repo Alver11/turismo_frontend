@@ -211,7 +211,7 @@ const options = ref({
     },
     {
       targets: '_all',
-      render: function(data, type, row, meta) {
+      render: function(data: any, type: any) {
         if (data != null) {
           return type === 'display' && data.length > 100
             ? '<div style="width: 400px; overflow: hidden; text-overflow: ellipsis;">' +
