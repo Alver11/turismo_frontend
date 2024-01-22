@@ -8,7 +8,6 @@ import { catchFieldError } from '/@src/utils/api/catchFormErrors'
 import { toTypedSchema } from '@vee-validate/zod'
 import {string, z as zod } from 'zod'
 import { useI18n } from 'vue-i18n'
-import messages from '@intlify/unplugin-vue-i18n/messages'
 
 
 const api = useApi()
