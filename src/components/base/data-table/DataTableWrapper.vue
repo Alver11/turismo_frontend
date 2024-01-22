@@ -981,7 +981,12 @@ watchEffect(() => {
   <div class="table">
     <div class="table-head">
       <div class="table-head-right">
-        <VButton icon="fas fa-sync" :loading="isLoading" rounded @click="updateTable()">
+        <VButton
+          icon="fas fa-sync"
+          :loading="isLoading"
+          rounded
+          @click="updateTable()"
+        >
           Actualizar
         </VButton>
         <VIconButton
@@ -1049,9 +1054,15 @@ watchEffect(() => {
               <VField>
                 <VControl>
                   <VSelect v-model="sizePage">
-                    <VOption value="Letter">Carta</VOption>
-                    <VOption value="A4">A4</VOption>
-                    <VOption value="Legal">Oficio</VOption>
+                    <VOption value="Letter">
+                      Carta
+                    </VOption>
+                    <VOption value="A4">
+                      A4
+                    </VOption>
+                    <VOption value="Legal">
+                      Oficio
+                    </VOption>
                   </VSelect>
                 </VControl>
               </VField>
@@ -1071,7 +1082,7 @@ watchEffect(() => {
                     name="orientation"
                     value="Vertical"
                     class="page-orientation-button"
-                  />
+                  >
                   <span class="orientation-image">
                     <svg
                       width="38.619mm"
@@ -1079,7 +1090,10 @@ watchEffect(() => {
                       viewBox="0 0 38.619 51.46"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <g transform="translate(-4.1091 -73.526)" stroke-linecap="round">
+                      <g
+                        transform="translate(-4.1091 -73.526)"
+                        stroke-linecap="round"
+                      >
                         <g
                           transform="matrix(0 -.78686 -.93007 0 125.15 164.61)"
                           fill="none"
@@ -1147,7 +1161,7 @@ watchEffect(() => {
                     name="orientation"
                     value="Horizontal"
                     class="page-orientation-button"
-                  />
+                  >
                   <span class="orientation-image">
                     <svg
                       width="51.46mm"
@@ -1155,7 +1169,10 @@ watchEffect(() => {
                       viewBox="0 0 51.46 38.619"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <g transform="translate(-35.194 -155.96)" stroke-linecap="round">
+                      <g
+                        transform="translate(-35.194 -155.96)"
+                        stroke-linecap="round"
+                      >
                         <g
                           transform="matrix(.78686 0 0 .93007 -4.4291 73.537)"
                           fill="none"
@@ -1220,7 +1237,11 @@ watchEffect(() => {
             <th colspan="2">
               <VField label="Descripcion">
                 <VControl>
-                  <VInput v-model="description" type="text" placeholder="" />
+                  <VInput
+                    v-model="description"
+                    type="text"
+                    placeholder=""
+                  />
                 </VControl>
               </VField>
             </th>
@@ -1241,15 +1262,25 @@ watchEffect(() => {
             <th>Enumerar filas</th>
             <th>
               <VControl subcontrol>
-                <VSwitchSegment v-model="exportPdfAddNumber" color="primary" />
+                <VSwitchSegment
+                  v-model="exportPdfAddNumber"
+                  color="primary"
+                />
               </VControl>
             </th>
           </tr>
           <tr>
             <th colspan="2">
-              <VField label="Observación" class="">
+              <VField
+                label="Observación"
+                class=""
+              >
                 <VControl>
-                  <VInput v-model="observation" type="text" placeholder="" />
+                  <VInput
+                    v-model="observation"
+                    type="text"
+                    placeholder=""
+                  />
                 </VControl>
               </VField>
             </th>
@@ -1284,7 +1315,10 @@ watchEffect(() => {
             <th>Incluir el total de registros</th>
             <th>
               <VControl subcontrol>
-                <VSwitchSegment v-model="exportExcelAllData" color="primary" />
+                <VSwitchSegment
+                  v-model="exportExcelAllData"
+                  color="primary"
+                />
               </VControl>
             </th>
           </tr>
@@ -1292,7 +1326,10 @@ watchEffect(() => {
             <th>Enumerar filas</th>
             <th>
               <VControl subcontrol>
-                <VSwitchSegment v-model="exportExcelAddNumber" color="primary" />
+                <VSwitchSegment
+                  v-model="exportExcelAddNumber"
+                  color="primary"
+                />
               </VControl>
             </th>
           </tr>
