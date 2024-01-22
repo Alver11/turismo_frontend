@@ -22,7 +22,7 @@ import logo from '/@src/assets/logo/logo_cordillera.png'
 import { useNotyf } from '/@src/composable/useNotyf'
 
 DataTable.use(pdfMake)
-(<any>pdfMake).vfs = pdfFonts.pdfMake.vfs
+pdfMake.vfs = pdfFonts.pdfMake.vfs
 DataTable.use(DataTablesCore)
 DataTable.use(DataTableButtons)
 
