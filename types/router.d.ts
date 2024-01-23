@@ -50,9 +50,12 @@ declare module 'vue-router/auto/routes' {
     '/setting/attribute': RouteRecordInfo<'/setting/attribute', '/setting/attribute', Record<never, never>, Record<never, never>>,
     '/setting/categories': RouteRecordInfo<'/setting/categories', '/setting/categories', Record<never, never>, Record<never, never>>,
     '/setting/categories-new': RouteRecordInfo<'/setting/categories-new', '/setting/categories-new', Record<never, never>, Record<never, never>>,
-    '/setting/rol': RouteRecordInfo<'/setting/rol', '/setting/rol', Record<never, never>, Record<never, never>>,
+    '/setting/role/rol': RouteRecordInfo<'/setting/role/rol', '/setting/role/rol', Record<never, never>, Record<never, never>>,
+    '/setting/role/rol-create': RouteRecordInfo<'/setting/role/rol-create', '/setting/role/rol-create', Record<never, never>, Record<never, never>>,
+    '/setting/role/rol-update': RouteRecordInfo<'/setting/role/rol-update', '/setting/role/rol-update', Record<never, never>, Record<never, never>>,
     '/setting/user/users': RouteRecordInfo<'/setting/user/users', '/setting/user/users', Record<never, never>, Record<never, never>>,
     '/setting/user/users-create': RouteRecordInfo<'/setting/user/users-create', '/setting/user/users-create', Record<never, never>, Record<never, never>>,
+    '/setting/user/users-update': RouteRecordInfo<'/setting/user/users-update', '/setting/user/users-update', Record<never, never>, Record<never, never>>,
   }
 }
 

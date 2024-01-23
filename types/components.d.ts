@@ -33,6 +33,7 @@ declare module 'vue' {
     MobileNavbar: typeof import('./../src/components/navigation/mobile/MobileNavbar.vue')['default']
     MobileSidebar: typeof import('./../src/components/navigation/mobile/MobileSidebar.vue')['default']
     NotificationsMobileDropdown: typeof import('./../src/components/partials/dropdowns/NotificationsMobileDropdown.vue')['default']
+    RolCreateUpdate: typeof import('./../src/components/pages/setting/rol/RolCreateUpdate.vue')['default']
     RolList: typeof import('./../src/components/pages/setting/rol/RolList.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

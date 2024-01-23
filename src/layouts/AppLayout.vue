@@ -251,7 +251,7 @@ watch(
               Lugares Turisticos
             </RouterLink>
           </li>
-          <li>
+          <li v-if="hasPermission('program events')">
             <RouterLink
               to="/events"
               class="single-link"
@@ -266,7 +266,7 @@ watch(
             </RouterLink>
           </li>
           <VCollapseLinks
-            v-if="hasPermission('program setting')"
+            v-if="hasPermission('module setting')"
             v-model:open="openSideblockLinks"
             collapse-id="setting"
           >
@@ -306,6 +306,7 @@ watch(
               <span>Atributos</span>
             </RouterLink>
             <RouterLink
+              permission="program roles"
               to="/setting/rol"
               class="is-submenu"
             >
@@ -316,6 +317,7 @@ watch(
               <span>Roles/Permisos</span>
             </RouterLink>
             <RouterLink
+              v-if="hasPermission('program users')"
               to="/setting/users"
               class="is-submenu"
             >

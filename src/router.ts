@@ -1,6 +1,7 @@
 import { createMemoryHistory, createRouter as createClientRouter, createWebHistory } from 'vue-router'
 import layoutAuth from '/@src/pages/auth.vue'
 import layoutApp from '/@src/pages/app.vue'
+import { hasPermission } from '/@src/utils/permissions'
 
 const routes = [
   {
@@ -90,10 +91,43 @@ const routes = [
 
       //---------------------------- Rol and Permission ----------------
       {
-        component: () => import('/@src/pages/setting/rol.vue'),
+        component: () => import('/@src/pages/setting/role/rol.vue'),
         path: '/setting/rol',
         name: 'setting/rol',
         props: true,
+        beforeEnter: (to: any, from: any, next: any) => {
+          if (hasPermission('program roles')) {
+            next()
+          } else {
+            next('/error')
+          }
+        }
+      },
+      {
+        component: () => import('/@src/pages/setting/role/rol-create.vue'),
+        path: '/setting/rol/create',
+        name: 'setting/rol/create',
+        props: true,
+        beforeEnter: (to: any, from: any, next: any) => {
+          if (hasPermission('roles create')) {
+            next()
+          } else {
+            next('/error')
+          }
+        }
+      },
+      {
+        component: () => import('/@src/pages/setting/role/rol-update.vue'),
+        path: '/setting/rol/update/:id',
+        name: '/setting/rol/update',
+        props: true,
+        beforeEnter: (to: any, from: any, next: any) => {
+          if (hasPermission('roles edit')) {
+            next()
+          } else {
+            next('/error')
+          }
+        }
       },
 
       //---------------------------- Users -----------------------------
@@ -102,18 +136,39 @@ const routes = [
         path: '/setting/users',
         name: 'setting/users',
         props: true,
+        beforeEnter: (to: any, from: any, next: any) => {
+          if (hasPermission('program users')) {
+            next()
+          } else {
+            next('/error')
+          }
+        }
       },
       {
         component: () => import('/@src/pages/setting/user/users-create.vue'),
         path: '/setting/users/create',
         name: 'setting/users/create',
         props: true,
+        beforeEnter: (to: any, from: any, next: any) => {
+          if (hasPermission('users create')) {
+            next()
+          } else {
+            next('/error')
+          }
+        }
       },
       {
-        component: () => import('/@src/pages/setting/user/users-create.vue'),
+        component: () => import('/@src/pages/setting/user/users-update.vue'),
         path: '/setting/users/update/:id',
         name: 'setting/users/update',
         props: true,
+        beforeEnter: (to: any, from: any, next: any) => {
+          if (hasPermission('users edit')) {
+            next()
+          } else {
+            next('/error')
+          }
+        }
       },
     ],
   },

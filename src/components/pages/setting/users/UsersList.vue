@@ -55,7 +55,7 @@ const columns = [
       if(data.length > 0) {
         data.forEach((roles: any) => {
           if(type === 'display') {
-            rolHtml =  rolHtml+'- <p class="is-primary">' +  roles.name + '</p>';
+            rolHtml =  rolHtml+'&nbsp;<small class="tag is-info is-rounded">- ' +  roles.name + '</small>';
           }
         })
       }
@@ -83,7 +83,10 @@ const columns = [
 ]
 const idData = ref(null)
 const emit = defineEmits(['updateTable'])
-const showButtons = ['edit','delete']
+const buttonTable = [
+  { button:'edit', permission: 'users edit'},
+  { button:'delete', permission: 'users delete'}
+]
 const updateTableEvent = ref(false)
 
 const handleEdit = (id: number) => {
@@ -137,7 +140,7 @@ async function DeletedTraining() {
   />
 
   <div
-    v-if="hasPermission('program create users')"
+    v-if="hasPermission('users create')"
     class="list-flex-toolbar flex-list-v1"
   >
     <VButtons>
@@ -155,7 +158,7 @@ async function DeletedTraining() {
     :columns="columns"
     server-side-url="users"
     :update-table-event="updateTableEvent"
-    :show-buttons="showButtons"
+    :button-table="buttonTable"
     :search-columns="true"
     @edit="handleEdit"
     @delete="handleDelete"

@@ -1,5 +1,6 @@
 <script lang="ts">
-import { type PropType, Transition, Fragment } from 'vue'
+import { type PropType, Transition } from 'vue'
+import { hasPermission } from '/@src/utils/permissions'
 
 export default defineComponent({
   props: {
@@ -60,21 +61,23 @@ export default defineComponent({
       }
     )
 
+    function shouldRenderChild(child: any) {
+      if (child.type.name === 'RouterLink' && child.props?.permission) {
+        return hasPermission(child.props.permission);
+      }
+      return true;
+    }
+
     return () => {
       const header = slots.header?.()
       const slotContent = slots.default?.() ?? []
-      const links = [] as VNode[]
 
-      for (const child of slotContent) {
-        if (child.type === Fragment) {
-          const children = child.children as VNode[]
-          for (const child of children) {
-            links.push(h('li', {}, child))
-          }
-        } else {
-          links.push(h('li', {}, child))
-        }
-      }
+      const links = slotContent
+        .filter(shouldRenderChild) // Filtra los hijos primero
+        .map(child => {
+          // Aquí, solo llegan los nodos que deben ser renderizados
+          return h('li', {}, child);
+        });
 
       const parentLink = h(
         'a',
