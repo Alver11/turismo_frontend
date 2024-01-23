@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useApi } from '/@src/composable/useApi'
+import { hasPermission } from '/@src/utils/permissions'
 import axios from 'axios'
 import { useUserSession } from '/@src/stores/userSession'
 import DataTable from 'datatables.net-vue3'
@@ -8,12 +9,12 @@ import DataTableButtons from 'datatables.net-buttons'
 import * as XLSX from 'xlsx'
 import pdfMake from 'pdfmake/build/pdfmake'
 import * as pdfFonts from 'pdfmake/build/vfs_fonts'
-import 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
+//import 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
 import 'datatables.net-buttons/js/buttons.html5.js'
 import 'datatables.net-buttons/js/buttons.print.js'
 import 'datatables.net-buttons/js/buttons.colVis.js'
 import 'https://code.jquery.com/jquery-3.7.1.min.js'
-import 'https://bartaz.github.io/sandbox.js/jquery.highlight.js'
+//import 'https://bartaz.github.io/sandbox.js/jquery.highlight.js'
 import 'datatables.net-select'
 import 'datatables.net-responsive'
 import 'datatables.net-colreorder-dt'
@@ -43,9 +44,9 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  showButtons: {
+  buttonTable: {
     type: Array,
-    default: () => [],
+    default: () => []
   },
   searchColumns: {
     type: Boolean,
@@ -90,27 +91,29 @@ const augmentedColumns = [
     data: props.columnId,
     render: function (data: any) {
       let buttons = `<div class="action-button">`
-      if (props.showButtons.includes('view')) {
-        buttons =
-          buttons +
-          `<button data-id="${data}" class="button is-dark-bg-1 is-info is-light" id="view">
+      props.buttonTable.forEach(button => {
+        if(button.button == 'view' && hasPermission(button.permission)){
+          buttons =
+            buttons +
+            `<button data-id="${data}" class="button is-dark-bg-1 is-info is-light" id="view">
             <i class="iconify" data-icon="feather:eye" aria-hidden="true"></i>
           </button>`
-      }
-      if (props.showButtons.includes('edit')) {
-        buttons =
-          buttons +
-          `<button data-id="${data}" class="button is-dark-bg-1 is-warning is-light" id="edit">
+        }
+        if(button.button == 'edit' && hasPermission(button.permission)){
+          buttons =
+            buttons +
+            `<button data-id="${data}" class="button is-dark-bg-1 is-warning is-light" id="edit">
             <i class="iconify" data-icon="feather:edit" aria-hidden="true"></i>
           </button>`
-      }
-      if (props.showButtons.includes('delete')) {
-        buttons =
-          buttons +
-          `<button data-id="${data}" class="button is-dark-bg-1 is-danger is-light" id="delete">
-                                <i class="iconify" data-icon="feather:trash-2" aria-hidden="true"></i>
-                             </button>`
-      }
+        }
+        if(button.button == 'delete' && hasPermission(button.permission)){
+          buttons =
+            buttons +
+            `<button data-id="${data}" class="button is-dark-bg-1 is-danger is-light" id="delete">
+                <i class="iconify" data-icon="feather:trash-2" aria-hidden="true"></i>
+             </button>`
+        }
+      })
       return buttons + `</div>`
     },
     exportable: false,
