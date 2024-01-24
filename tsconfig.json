@@ -19,7 +19,8 @@
     "types": [
       "vite/client",
       "vite-plugin-pwa/client",
-      "@intlify/unplugin-vue-i18n/messages"
+      "@intlify/unplugin-vue-i18n/messages",
+      "@types/google.maps"
     ],
     "paths": {
       "photoswipe/lightbox": [

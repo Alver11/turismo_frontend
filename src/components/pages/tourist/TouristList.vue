@@ -55,16 +55,16 @@ const DeletedTraining = async () => {
   />
 
   <div
-    v-if="hasPermission('program create tourist')"
+    v-if="hasPermission('tourists create')"
     class="list-flex-toolbar flex-list-v1"
   >
     <VButtons>
       <VButton
-        to="/setting/attributes/create"
+        to="/tourist/create"
         color="primary"
         icon="fas fa-plus"
       >
-        Nuevo Atributo
+        Nuevo Sitio
       </VButton>
     </VButtons>
   </div>
