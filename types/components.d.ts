@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AnimatedLogo: typeof import('./../src/components/svg/AnimatedLogo.vue')['default']
     AppLayout: typeof import('./../src/layouts/AppLayout.vue')['default']
+    AttributeCreateUpdate: typeof import('./../src/components/pages/setting/attributes/AttributeCreateUpdate.vue')['default']
     AttributesList: typeof import('./../src/components/pages/setting/attributes/AttributesList.vue')['default']
     AuthLayout: typeof import('./../src/layouts/AuthLayout.vue')['default']
     CategoriesList: typeof import('./../src/components/pages/setting/categories/CategoriesList.vue')['default']
@@ -41,6 +42,7 @@ declare module 'vue' {
     Sideblock: typeof import('./../src/components/navigation/desktop/Sideblock.vue')['default']
     StackPopoverContent: typeof import('./../src/components/partials/popover/StackPopoverContent.vue')['default']
     Toolbar: typeof import('./../src/components/partials/toolbars/Toolbar.vue')['default']
+    TouristCreateUpdate: typeof import('./../src/components/pages/tourist/TouristCreateUpdate.vue')['default']
     TouristList: typeof import('./../src/components/pages/tourist/TouristList.vue')['default']
     UIWidget: typeof import('./../src/components/partials/widgets/ui-creative/UIWidget.vue')['default']
     UserCreateUpdate: typeof import('./../src/components/pages/setting/users/UserCreateUpdate.vue')['default']
