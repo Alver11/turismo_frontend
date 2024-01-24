@@ -237,7 +237,7 @@ watch(
               Panel Principal
             </RouterLink>
           </li>
-          <li>
+          <li v-if="hasPermission('program tourists')">
             <RouterLink
               to="/tourist"
               class="single-link"
@@ -287,6 +287,7 @@ watch(
             </template>
             <RouterLink
               to="/setting/categories"
+              permission="program categories"
               class="is-submenu"
             >
               <i
@@ -297,6 +298,7 @@ watch(
             </RouterLink>
             <RouterLink
               to="/setting/attributes"
+              permission="program attributes"
               class="is-submenu"
             >
               <i
@@ -317,7 +319,7 @@ watch(
               <span>Roles/Permisos</span>
             </RouterLink>
             <RouterLink
-              v-if="hasPermission('program users')"
+              permission="program users"
               to="/setting/users"
               class="is-submenu"
             >

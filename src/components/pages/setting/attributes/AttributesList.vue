@@ -6,16 +6,36 @@ import { hasPermission } from '/@src/utils/permissions'
 
 const notify = useNotyf()
 const api = useApi()
+const router = useRouter()
 const modalDeleted = ref(false)
 const idData = ref(null)
 const emit = defineEmits(['updateTable'])
 const updateTableEvent = ref(false)
+const columns = [
+  { data: 'id', title: 'ID', visible: false},
+  { data: 'name', title: 'Nombre del Atributo' },
+]
+const buttonTable = [
+  { button:'edit', permission: 'attributes edit'},
+  { button:'delete', permission: 'attributes delete'}
+]
 
-const DeletedTraining = async () => {
+const handleEdit = (id: number) => {
+  router.push({
+    name: 'setting/attributes/update',
+    params: { id },
+  })
+}
+
+const handleDelete = (data: any) => {
+  idData.value = data
+  modalDeleted.value = true
+}
+const DeletedData = async () => {
   try {
     updateTableEvent.value = false
     emit('updateTable')
-    const res = await api.delete(`/categories/${idData.value}`)
+    const res = await api.delete(`/attributes/${idData.value}`)
     modalDeleted.value = false
     updateTableEvent.value = true
     emit('updateTable')
@@ -51,7 +71,7 @@ const DeletedTraining = async () => {
   />
 
   <div
-    v-if="hasPermission('program create categories')"
+    v-if="hasPermission('attributes create')"
     class="list-flex-toolbar flex-list-v1"
   >
     <VButtons>
@@ -65,6 +85,14 @@ const DeletedTraining = async () => {
     </VButtons>
   </div>
 
+  <DataTableWrapper
+    :columns="columns"
+    server-side-url="attributes"
+    :update-table-event="updateTableEvent"
+    :button-table="buttonTable"
+    @edit="handleEdit"
+    @delete="handleDelete"
+  />
 
   <VModal
     title="Eliminar Datos"
@@ -83,7 +111,7 @@ const DeletedTraining = async () => {
       <VButton
         color="danger"
         raised
-        @click="DeletedTraining()"
+        @click="DeletedData"
       >
         Eliminar
       </VButton>

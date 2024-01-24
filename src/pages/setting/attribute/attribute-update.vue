@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { useViewWrapper } from '/@src/stores/viewWrapper'
-import AttributesList from '/@src/components/pages/setting/attributes/AttributesList.vue'
 
 const viewWrapper = useViewWrapper()
-viewWrapper.setPageTitle('Listado de Atributos')
+viewWrapper.setPageTitle('Editar Atributo')
 
 useHead({
-  title: 'Listado de Atributos',
+  title: 'Editar Atributo',
 })
 </script>
 
 <template>
   <div class="page-content-inner">
-    <AttributesList />
+    <AttributeCreateUpdate />
   </div>
 </template>
