@@ -34,10 +34,18 @@ const routes = [
       },
       //--------- List Tour -------------------------------------------
       {
-        component: () => import('/@src/pages/app/tourist.vue'),
+        component: () => import('/@src/pages/app/tourist/tourist.vue'),
         path: '/tourist',
         name: 'tourist',
         props: true,
+        meta: { permission: 'program tourists' },
+      },
+      {
+        component: () => import('/@src/pages/app/tourist/tourist-create.vue'),
+        path: '/tourist/create',
+        name: 'tourist/create',
+        props: true,
+        meta: { permission: 'tourists create' },
       },
       //--------- Events ----------------------------------------------
       {
@@ -45,6 +53,7 @@ const routes = [
         path: '/events',
         name: 'events',
         props: true,
+        meta: { permission: 'program events' },
       },
 
       //--------- Setting ---------------------------------------------
@@ -55,39 +64,45 @@ const routes = [
         path: '/setting/categories',
         name: 'setting/categories',
         props: true,
+        meta: { permission: 'program categories' },
       },
       {
         component: () => import('/@src/pages/setting/categories-new.vue'),
         path: '/setting/categories/create',
         name: 'setting/categories/create',
         props: true,
+        meta: { permission: 'categories create' },
       },
       {
         component: () => import('/@src/pages/setting/categories-new.vue'),
         path: '/setting/categories/update/:id',
         name: 'setting/categories/update',
         props: true,
+        meta: { permission: 'categories edit' },
       },
 
       //---------------------------- Attributes -----------------------
       {
-        component: () => import('/@src/pages/setting/attribute.vue'),
+        component: () => import('/@src/pages/setting/attribute/attribute.vue'),
         path: '/setting/attributes',
         name: 'setting/attributes',
         props: true,
-      },
-      /*{
-        component: () => import('/@src/pages/setting/attributes-new.vue'),
-        path: '/setting/attributes/create',
-        name: 'attributes-new',
-        props: true,
+        meta: { permission: 'program attributes' },
       },
       {
-        component: () => import('/@src/pages/setting/attributes-new.vue'),
-        path: '/setting/attributes/update/:id',
-        name: 'attributes/update',
+        component: () => import('/@src/pages/setting/attribute/attribute-create.vue'),
+        path: '/setting/attributes/create',
+        name: 'setting/attributes/create',
         props: true,
-      },*/
+        meta: { permission: 'attributes create' },
+      },
+      {
+        component: () => import('/@src/pages/setting/attribute/attribute-update.vue'),
+        path: '/setting/attributes/update/:id',
+        name: 'setting/attributes/update',
+        props: true,
+        meta: { permission: 'attributes edit' },
+      },
 
       //---------------------------- Rol and Permission ----------------
       {
@@ -95,39 +110,21 @@ const routes = [
         path: '/setting/rol',
         name: 'setting/rol',
         props: true,
-        beforeEnter: (to: any, from: any, next: any) => {
-          if (hasPermission('program roles')) {
-            next()
-          } else {
-            next('/error')
-          }
-        }
+        meta: { permission: 'program roles' },
       },
       {
         component: () => import('/@src/pages/setting/role/rol-create.vue'),
         path: '/setting/rol/create',
         name: 'setting/rol/create',
         props: true,
-        beforeEnter: (to: any, from: any, next: any) => {
-          if (hasPermission('roles create')) {
-            next()
-          } else {
-            next('/error')
-          }
-        }
+        meta: { permission: 'roles create' },
       },
       {
         component: () => import('/@src/pages/setting/role/rol-update.vue'),
         path: '/setting/rol/update/:id',
         name: '/setting/rol/update',
         props: true,
-        beforeEnter: (to: any, from: any, next: any) => {
-          if (hasPermission('roles edit')) {
-            next()
-          } else {
-            next('/error')
-          }
-        }
+        meta: { permission: 'roles edit' },
       },
 
       //---------------------------- Users -----------------------------
@@ -136,39 +133,21 @@ const routes = [
         path: '/setting/users',
         name: 'setting/users',
         props: true,
-        beforeEnter: (to: any, from: any, next: any) => {
-          if (hasPermission('program users')) {
-            next()
-          } else {
-            next('/error')
-          }
-        }
+        meta: { permission: 'program users' },
       },
       {
         component: () => import('/@src/pages/setting/user/users-create.vue'),
         path: '/setting/users/create',
         name: 'setting/users/create',
         props: true,
-        beforeEnter: (to: any, from: any, next: any) => {
-          if (hasPermission('users create')) {
-            next()
-          } else {
-            next('/error')
-          }
-        }
+        meta: { permission: 'users create' },
       },
       {
         component: () => import('/@src/pages/setting/user/users-update.vue'),
         path: '/setting/users/update/:id',
         name: 'setting/users/update',
         props: true,
-        beforeEnter: (to: any, from: any, next: any) => {
-          if (hasPermission('users edit')) {
-            next()
-          } else {
-            next('/error')
-          }
-        }
+        meta: { permission: 'users edit' },
       },
     ],
   },
@@ -182,7 +161,7 @@ const routes = [
 ];
 
 export function createRouter() {
-  return createClientRouter({
+  const router = createClientRouter({
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
     routes,
     scrollBehavior: (to, from, savedPosition) => {
@@ -225,4 +204,14 @@ export function createRouter() {
       }
     },
   })
+  router.beforeEach((to, from, next) => {
+    const permission = to.meta.permission as string
+    if (!permission || hasPermission(permission)) {
+      next()
+    } else {
+      next('/error')
+    }
+  })
+
+  return router
 }
