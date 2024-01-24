@@ -35,7 +35,10 @@ const columns = [
 
 
 const emit = defineEmits(['updateTable'])
-const showButtons = ['edit','delete']
+const buttonTable = [
+  { button:'edit', permission: 'categories edit'},
+  { button:'delete', permission: 'categories delete'}
+]
 
 
 const handleEdit = (id: number) => {
@@ -90,7 +93,7 @@ const DeletedTraining = async () => {
   />
 
   <div
-    v-if="hasPermission('program create categories')"
+    v-if="hasPermission('categories create')"
     class="list-flex-toolbar flex-list-v1"
   >
     <VButtons>
@@ -108,7 +111,7 @@ const DeletedTraining = async () => {
     :columns="columns"
     server-side-url="categories"
     :update-table-event="updateTableEvent"
-    :show-buttons="showButtons"
+    :button-table="buttonTable"
     @edit="handleEdit"
     @delete="handleDelete"
   />
