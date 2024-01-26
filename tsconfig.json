@@ -45,9 +45,5 @@
     "scripts/**/*.ts",
     "*.config.ts"
   ],
-  "exclude": [
-    "bulma-colors.ts",
-    "pdfmake.js$",
-    "pdfFonts.js$"
-  ]
+  "exclude": ["bulma-colors.ts"]
 }

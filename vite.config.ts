@@ -122,10 +122,6 @@ export default defineConfig({
       'workbox-window',
       'textarea-markdown-editor/dist/esm/bootstrap',
     ],
-    exclude: [
-      "pdfmake.js$",
-      "pdfFonts.js$"
-    ]
     // disabled: false,
   },
   // Will be passed to @rollup/plugin-alias as its entries option.
@@ -146,16 +142,6 @@ export default defineConfig({
     // https://vitejs.dev/config/build-options.html#build-assetsinlinelimit
     assetsInlineLimit: 4096 * 2,
     // commonjsOptions: { include: [] },
-    rollupOptions: {
-      context: 'window',
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules/pdfmake/build/vfs_fonts.js')) {
-            return 'pdfmake';
-          }
-        },
-      },
-    },
   },
   plugins: [
     /**

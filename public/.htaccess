@@ -1,6 +1,5 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  # Redirige todas las solicitudes al index.html
   RewriteBase /
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
