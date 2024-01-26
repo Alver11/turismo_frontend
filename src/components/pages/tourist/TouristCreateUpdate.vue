@@ -23,13 +23,6 @@ declare var google: any
 let marker: google.maps.Marker | null = null
 const draggableMaps = ref(true)
 
-const data = [
-  {
-    id: '1',
-    attribute: 'yellow',
-  },
-  // and more data ...
-]
 
 interface RouteParams { id?: string }
 interface userForm {
@@ -38,7 +31,8 @@ interface userForm {
   description: string,
   district: number,
   lat: number,
-  lng: number
+  lng: number,
+  imageName: string,
 }
 
 const getDataUpdate = async (idValue: string | RouteParamValue[]) => {
@@ -58,7 +52,7 @@ const validationSchema = toTypedSchema(
   })
 )
 
-type FieldNames = 'name'|'address'|'description'|'district'|'lat'|'lng'
+type FieldNames = 'name'|'address'|'description'|'district'|'lat'|'lng'|'imageName'
 const { values, handleSubmit, isSubmitting, setFieldError, setFieldValue } = useForm<userForm>({
   validationSchema,
   initialValues: {
@@ -225,6 +219,51 @@ function createMarker(map: google.maps.Map, position: google.maps.LatLngLiteral)
   return marker
 }
 
+interface ImageFile {
+  file: File
+  currentImageUrl: string
+  profile: boolean
+  imageDimension: {
+    width: number
+    height: number
+  };
+}
+const imageSelect = ref<ImageFile[]>([])
+const onFileSelect = (event: Event): void => {
+  const input = event.target as HTMLInputElement;
+  if (input.files) {
+    const files = Array.from(input.files)
+
+    files.forEach((file) => {
+      const fileURL = URL.createObjectURL(file)
+      const img = new Image()
+      img.onload = () => {
+        imageSelect.value.push({
+          file: file,
+          currentImageUrl: fileURL,
+          profile: false,
+          imageDimension: {
+            width: img.width,
+            height: img.height
+          }
+        })
+      };
+
+      img.src = fileURL
+    })
+  }
+}
+const setSelectedProfile = (selectedIndex: number): void => {
+  imageSelect.value.forEach((image, index) => {
+    image.profile = index === selectedIndex
+  })
+}
+const removeFile = (index: number): void => {
+  if (index > -1 && index < imageSelect.value.length) {
+    imageSelect.value.splice(index, 1);
+  }
+}
+
 const { y } = useWindowScroll()
 const isStuck = computed(() => {
   return y.value > 30
@@ -372,7 +411,10 @@ const isStuck = computed(() => {
               </VField>
             </div>
             <div class="column is-12">
-              <VField v-slot="{ id }" label="Seleccione la categoría">
+              <VField
+                v-slot="{ id }"
+                label="Seleccione la categoría"
+              >
                 <VControl>
                   <Multiselect
                     v-model="categoriesSelect"
@@ -395,7 +437,73 @@ const isStuck = computed(() => {
                 id="maps"
                 label="Lista de Atributos"
               >
-                <VFlexTable :data="data" />
+                <div class="columns is-multiline">
+                  <div class="column is-12">
+                    <VField grouped>
+                      <VControl>
+                        <div class="file">
+                          <label class="file-label">
+                            <input
+                              class="file-input"
+                              accept="image/*"
+                              type="file"
+                              name="resume"
+                              multiple
+                              @change="onFileSelect"
+                            >
+                            <span class="file-cta">
+                              <span class="file-icon">
+                                <i class="fas fa-cloud-upload-alt" />
+                              </span>
+                              <span class="file-label"> Agregar Imagenes </span>
+                            </span>
+                          </label>
+                        </div>
+                      </VControl>
+                    </VField>
+                  </div>
+                  <div class="column is-12">
+                    <div class="form-section-output">
+                      <div
+                        v-for="(image, index) in imageSelect"
+                        :key="index"
+                        class="output"
+                      >
+                        <div
+                          class="items"
+                        >
+                          <VPhotosSwipe
+                            thumbnail-radius="5"
+                            gallery="#gallery--no-dynamic-import"
+                            :items="[
+                              {
+                                src: image.currentImageUrl,
+                                thumbnail: image.currentImageUrl,
+                                w: image.imageDimension.width,
+                                h: image.imageDimension.height,
+                              },
+                            ]"
+                          />
+                        </div>
+                        <div class="action">
+                          <VRadio
+                            v-model="image.profile"
+                            :value="true"
+                            label="Imagen de Portada"
+                            name="outlined_squared_radio"
+                            color="info"
+                            square
+                            @change="() => setSelectedProfile(index)"
+                          />
+                          <VIconButton
+                            icon="feather:trash-2"
+                            @click.prevent="removeFile(index)"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </VField>
             </div>
           </div>
@@ -462,6 +570,9 @@ const isStuck = computed(() => {
 
     .action {
       margin-left: auto;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
 
       button {
         display: flex;
