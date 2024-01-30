@@ -6,7 +6,8 @@ import { onMounted, ref } from 'vue'
 import type { RouteParamValue } from 'vue-router'
 import { catchFieldError } from '/@src/utils/api/catchFormErrors'
 import { toTypedSchema } from '@vee-validate/zod'
-import { string, z as zod } from 'zod'
+import { number, object, string, z as zod } from 'zod'
+import type Attribute from '/@src/pages/setting/attribute/attribute.vue'
 
 const api = useApi()
 const router = useRouter()
@@ -18,26 +19,45 @@ const districtSelect = ref()
 const optionsDistrict = ref([])
 const categoriesSelect = ref([])
 const optionsCategories = ref([])
+const optionsAttribute = ref([])
+const attributeSelect = ref(0)
 const mapDiv = ref<HTMLElement | null>(null)
 declare var google: any
 let marker: google.maps.Marker | null = null
 const draggableMaps = ref(true)
-
+const modalAttribute = ref(false)
+const nameAttribute = ref('')
+interface Attribute {
+  id: number,
+  name: string,
+  info: string
+}
+interface ImageFile {
+  file: File
+  currentImageUrl: string
+  profile: boolean
+  imageDimension: {
+    width: number
+    height: number
+  };
+}
+const imageSelect = ref<ImageFile[]>([])
+const attributes = ref<Attribute[]>()
 
 interface RouteParams { id?: string }
 interface userForm {
   name: string,
   address: string,
   description: string,
-  district: number,
+  district_id: number,
   lat: number,
   lng: number,
-  imageName: string,
+  categories: number[],
 }
 
 const getDataUpdate = async (idValue: string | RouteParamValue[]) => {
   try {
-    await api.get(`/attributes/${idValue}`).then(function(res) {
+    await api.get(`/tourists/${idValue}`).then(function(res) {
       setFieldValue('name', res.data.name)
     })
   } catch (err: any) {
@@ -49,10 +69,15 @@ const validationSchema = toTypedSchema(
   zod.object({
     name: string().min(3, { message : 'El nombre debe contener como mínimo 3 letras'}),
     address: string().min(3, { message : 'La dirección debe contener como mínimo 3 letras'}),
+    description: string().nullish(),
+    district_id: number().nullish(),
+    lat: number().nullish(),
+    lng: number().nullish(),
+    categories: object({})
   })
 )
 
-type FieldNames = 'name'|'address'|'description'|'district'|'lat'|'lng'|'imageName'
+type FieldNames = 'name'|'address'|'description'|'district_id'|'lat'|'lng'|'categories'
 const { values, handleSubmit, isSubmitting, setFieldError, setFieldValue } = useForm<userForm>({
   validationSchema,
   initialValues: {
@@ -76,6 +101,10 @@ onMounted(async () => {
         value: category.id,
         label: category.name
       }))
+    optionsAttribute.value = (await api.get('attributes')).data.data.map((attribute:any) => ({
+      value: attribute.id,
+      label: attribute.name
+    }))
     if (params.id) {
       await getDataUpdate(params.id)
     }
@@ -91,9 +120,21 @@ async function onSubmit(values: userForm) {
   if (isLoading.value) return
   isLoading.value = true
   try {
-    const url = params.id ? `attributes/${params.id}` : 'attributes'
+    const formData = new FormData()
+    imageSelect.value.forEach((imageFile, index) => {
+      formData.append(`images[${index}]`, imageFile.file);
+        formData.append(`images[${index}][profile]`, imageFile.profile.toString())
+    })
+    values.district_id = districtSelect.value
+    values.categories = categoriesSelect.value
+    formData.append('data', JSON.stringify(values))
+    const url = params.id ? `tourists/${params.id}` : 'tourists'
     const method = params.id ? api.put : api.post
-    const res = await method(url, JSON.stringify(values))
+    const res = await method(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
     notify.success(res.data.message)
     router.back()
   } catch (err) {
@@ -219,16 +260,6 @@ function createMarker(map: google.maps.Map, position: google.maps.LatLngLiteral)
   return marker
 }
 
-interface ImageFile {
-  file: File
-  currentImageUrl: string
-  profile: boolean
-  imageDimension: {
-    width: number
-    height: number
-  };
-}
-const imageSelect = ref<ImageFile[]>([])
 const onFileSelect = (event: Event): void => {
   const input = event.target as HTMLInputElement;
   if (input.files) {
@@ -254,6 +285,7 @@ const onFileSelect = (event: Event): void => {
   }
 }
 const setSelectedProfile = (selectedIndex: number): void => {
+  console.log(selectedIndex)
   imageSelect.value.forEach((image, index) => {
     image.profile = index === selectedIndex
   })
@@ -262,6 +294,15 @@ const removeFile = (index: number): void => {
   if (index > -1 && index < imageSelect.value.length) {
     imageSelect.value.splice(index, 1);
   }
+}
+
+function addAttribute() {
+  attributes.value?.push({ id: attributeSelect, name: 'hola', info: nameAttribute.value})
+  modalAttribute.value = false
+}
+
+function removeAttribute(index: number) {
+  attributes.value?.splice(index, 1)
 }
 
 const { y } = useWindowScroll()
@@ -384,6 +425,7 @@ const isStuck = computed(() => {
                 </VControl>
               </VField>
               <VField
+                id="district_id"
                 v-slot="{ id }"
                 label="Seleccione el distrito"
                 class="is-autocomplete-select"
@@ -428,7 +470,10 @@ const isStuck = computed(() => {
               </VField>
             </div>
             <div class="column is-12">
-              <VButton color="primary">
+              <VButton
+                color="primary"
+                @click="modalAttribute = true"
+              >
                 Agregar atributos
               </VButton>
             </div>
@@ -438,6 +483,45 @@ const isStuck = computed(() => {
                 label="Lista de Atributos"
               >
                 <div class="columns is-multiline">
+                  <div class="column is-12">
+                    <table class="table is-hoverable is-fullwidth">
+                      <thead>
+                        <tr>
+                          <th scope="col">
+                            Atributo
+                          </th>
+                          <th scope="col">
+                            Información
+                          </th>
+                          <th
+                            scope="col"
+                            class="is-end"
+                          >
+                            <div class="dark-inverted is-flex is-justify-content-flex-end" />
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(attribute, index) in attributes"
+                          :key="attribute.id"
+                        >
+                          <td>{{ attribute.name }}</td>
+                          <td>{{ attribute.info }}</td>
+                          <td class="is-end">
+                            <div class="is-flex is-justify-content-flex-end">
+                              <VIconButton
+                                color="danger"
+                                outlined
+                                icon="feather:trash"
+                                @click="removeAttribute(index)"
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                   <div class="column is-12">
                     <VField grouped>
                       <VControl>
@@ -493,7 +577,7 @@ const isStuck = computed(() => {
                             name="outlined_squared_radio"
                             color="info"
                             square
-                            @change="() => setSelectedProfile(index)"
+                            @click.prevent="setSelectedProfile(index)"
                           />
                           <VIconButton
                             icon="feather:trash-2"
@@ -511,6 +595,49 @@ const isStuck = computed(() => {
       </div>
     </div>
   </form>
+
+  <VModal
+    title="Agregar Atributo"
+    :open="modalAttribute"
+    size="small"
+    actions="center"
+    @close="modalAttribute = false"
+  >
+    <template #content>
+      <VField
+        label="Seleccione la categoría"
+      >
+        <VControl>
+          <Multiselect
+            v-model="attributeSelect"
+            :searchable="true"
+            :options="optionsAttribute"
+            placeholder="Seleccione el atibuto"
+          />
+        </VControl>
+      </VField>
+      <VField
+        label="Información"
+      >
+        <VControl>
+          <VInput
+            v-model="nameAttribute"
+            class="input"
+          />
+        </VControl>
+      </VField>
+      <p>*Observación: Si el atributo no requiere una informacion, no es obligatorio agregarlo</p>
+    </template>
+    <template #action>
+      <VButton
+        color="danger"
+        raised
+        @click="addAttribute"
+      >
+        Agregar
+      </VButton>
+    </template>
+  </VModal>
 </template>
 
 <style lang="scss">

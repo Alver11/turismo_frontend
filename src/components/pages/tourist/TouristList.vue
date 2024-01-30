@@ -3,23 +3,61 @@ import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
 import { formatError } from '/@src/composable/useError'
 import { hasPermission } from '/@src/utils/permissions'
+import { phoneFormat } from '/@src/utils/format-number-phone'
 
 const notify = useNotyf()
 const api = useApi()
 const modalDeleted = ref(false)
-const idData = ref(null)
-
+const idData = ref()
+const columns = [
+  { data: 'id', title: 'ID', visible: false},
+  {
+    data: 'images',
+    title: 'Imagen',
+    orderable: false,
+    searchable: false,
+    render: function(data: any, type: any) {
+      let imageHtml = '<div class="image-list"><img src="/src/assets/illustrations/images/ImageNotFound.png" alt="Image" /></div>'
+      if(data != null && data.length > 0) {
+        if(type === 'display') {
+          imageHtml =  '<div class="image-list"><img src="http://localhost/storage/' +  data[0].file_path + '" alt="Image" /></div>';
+        }
+      }
+      return imageHtml
+    }
+  },
+  { data: 'name', title: 'Nombre de Usuario', typeSearch: 'input' },
+  { data: 'address', title: 'Dirección', typeSearch: 'input' },
+]
+const buttonTable = [
+  { button:'view', permission: 'tourists view'},
+  { button:'edit', permission: 'tourists edit'},
+  { button:'delete', permission: 'tourists delete'}
+]
 
 const emit = defineEmits(['updateTable'])
 
 
 const updateTableEvent = ref(false)
 
+function handleView(){
+
+}
+
+function handleEdit(id: number){
+
+}
+
+function handleDelete(id: number){
+  idData.value = id
+  modalDeleted.value = true
+}
+
 const DeletedTraining = async () => {
   try {
     updateTableEvent.value = false
     emit('updateTable')
-    const res = await api.delete(`/categories/${idData.value}`)
+    const res = await api.delete(`/tourists/${idData.value}`)
     modalDeleted.value = false
     updateTableEvent.value = true
     emit('updateTable')
@@ -69,6 +107,16 @@ const DeletedTraining = async () => {
     </VButtons>
   </div>
 
+  <DataTableWrapper
+    :columns="columns"
+    server-side-url="tourists"
+    :update-table-event="updateTableEvent"
+    :button-table="buttonTable"
+    :search-columns="true"
+    @view="handleView"
+    @edit="handleEdit"
+    @delete="handleDelete"
+  />
 
   <VModal
     title="Eliminar Datos"
