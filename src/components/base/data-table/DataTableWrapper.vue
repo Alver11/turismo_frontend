@@ -7,10 +7,8 @@ import DataTable from 'datatables.net-vue3'
 import DataTablesCore, { type Config } from 'datatables.net'
 import DataTableButtons from 'datatables.net-buttons'
 import * as XLSX from 'xlsx'
-//const pdfMake = require('pdfmake/build/pdfmake')
-import 'pdfmake/build/vfs_fonts'
-import pdfMake from 'pdfmake/build/pdfmake'
-import * as pdfFonts from 'pdfmake/build/vfs_fonts'
+//import pdfMake from 'pdfmake/build/pdfmake'
+//import * as pdfFonts from 'pdfmake/build/vfs_fonts'
 import 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
 import 'datatables.net-buttons/js/buttons.html5.js'
 import 'datatables.net-buttons/js/buttons.print.js'
@@ -24,8 +22,13 @@ import '/@src/scss/components/_tableJquery.scss'
 import logo from '/@src/assets/logo/logo_cordillera.png'
 import { useNotyf } from '/@src/composable/useNotyf'
 
+import * as pdfMake from "pdfmake/build/pdfmake"
+import * as pdfFonts from 'pdfmake/build/vfs_fonts'
+
+(<any>pdfMake).addVirtualFileSystem(pdfFonts)
+
+//pdfMake.vfs = pdfFonts.pdfMake.vfs
 DataTable.use(pdfMake)
-pdfMake.vfs = pdfFonts.pdfMake.vfs
 DataTable.use(DataTablesCore)
 DataTable.use(DataTableButtons)
 
