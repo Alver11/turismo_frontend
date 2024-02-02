@@ -18,9 +18,13 @@ const params = route.params as RouteParams
 const districtSelect = ref()
 const optionsDistrict = ref([])
 const categoriesSelect = ref([])
-const optionsCategories = ref([])
-const optionsAttribute = ref([])
-const attributeSelect = ref(0)
+interface OptionsSelect {
+  value: number,
+  label: string,
+}
+const optionsCategories = ref<OptionsSelect[]>([])
+const optionsAttribute = ref<OptionsSelect[]>([])
+const attributeSelect = ref<number>(0)
 const mapDiv = ref<HTMLElement | null>(null)
 declare var google: any
 let marker: google.maps.Marker | null = null
@@ -42,7 +46,7 @@ interface ImageFile {
   };
 }
 const imageSelect = ref<ImageFile[]>([])
-const attributes = ref<Attribute[]>()
+const attributes = ref<Attribute[]>([])
 
 interface RouteParams { id?: string }
 interface userForm {
@@ -264,46 +268,62 @@ const onFileSelect = (event: Event): void => {
   const input = event.target as HTMLInputElement;
   if (input.files) {
     const files = Array.from(input.files)
-
-    files.forEach((file) => {
+    for (let i = 0; i < files.length; i++){
+      const file = files[i]
       const fileURL = URL.createObjectURL(file)
       const img = new Image()
+      let profileStatus = false
+      if(imageSelect.value.length < 1 && i == 0){
+        profileStatus = true
+      }
       img.onload = () => {
         imageSelect.value.push({
           file: file,
           currentImageUrl: fileURL,
-          profile: false,
+          profile: profileStatus,
           imageDimension: {
             width: img.width,
             height: img.height
           }
         })
       };
-
       img.src = fileURL
-    })
+    }
   }
 }
 const setSelectedProfile = (selectedIndex: number): void => {
-  console.log(selectedIndex)
+  //console.log(selectedIndex)
   imageSelect.value.forEach((image, index) => {
     image.profile = index === selectedIndex
   })
 }
 const removeFile = (index: number): void => {
   if (index > -1 && index < imageSelect.value.length) {
+    const profileStatus = imageSelect.value[index].profile
     imageSelect.value.splice(index, 1);
+    if( profileStatus == true && imageSelect.value.length > 0){
+      imageSelect.value[0].profile = true
+    }
   }
 }
 
 function addAttribute() {
-  attributes.value?.push({ id: attributeSelect, name: 'hola', info: nameAttribute.value})
+  const selectedOption = optionsAttribute.value.find(option => option.value === attributeSelect.value);
+  const attributeName = selectedOption ? selectedOption.label : '--';
+  attributes.value?.push({ id: attributeSelect, name: attributeName, info: nameAttribute.value})
   modalAttribute.value = false
 }
 
 function removeAttribute(index: number) {
   attributes.value?.splice(index, 1)
 }
+
+watch(modalAttribute, () => {
+  if(modalAttribute.value){
+    attributeSelect.value = 0
+    nameAttribute.value = ''
+  }
+})
 
 const { y } = useWindowScroll()
 const isStuck = computed(() => {
