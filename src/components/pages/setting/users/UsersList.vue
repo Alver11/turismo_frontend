@@ -20,7 +20,7 @@ const columns = [
       let imageHtml = '<div class="image-list"><img src="/src/assets/illustrations/images/ImageNotFound.png" alt="Image" /></div>'
       if(data != null && data != '') {
         if(type === 'display') {
-          imageHtml =  '<div class="image-list"><img src="http://localhost/storage/' +  data + '" alt="Image" /></div>';
+          imageHtml =  '<div class="image-list"><img src="'+import.meta.env.VITE_API_BASE_URL+'/storage/' +  data + '" alt="Image" /></div>';
         }
       }
       return imageHtml

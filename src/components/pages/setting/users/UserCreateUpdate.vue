@@ -33,7 +33,7 @@ const getDataUpdate = async (idValue: string | RouteParamValue[]) => {
       valueRole.value = res.data.roles.map((role:any) => role.id);
 
       if(res.data.profile_path){
-        currentImageUrl.value = 'http://localhost/storage/' + res.data.profile_path
+        currentImageUrl.value = import.meta.env.VITE_API_BASE_URL + '/storage/' + res.data.profile_path
         const img = new Image();
         img.onload = () => {
           // Una vez que la imagen se carga, puedes acceder a sus dimensiones
@@ -231,7 +231,7 @@ const isStuck = computed(() => {
         to: '/setting/users',
       },
       {
-        label: 'Crear Usuario',
+        label: params.id ? 'Actualizar Usuario' : 'Crear Usuario',
       },
     ]"
   />

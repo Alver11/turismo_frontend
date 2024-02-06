@@ -23,7 +23,7 @@ const getDataUpdate = async (idValue: string | RouteParamValue[]) => {
     await api.get(`/categories/${idValue}`).then(function(res) {
       setFieldValue('name', res.data.name)
       setFieldValue('imageName', res.data.images[0].name)
-      currentImageUrl.value = 'http://localhost/storage/' + res.data.images[0].file_path
+      currentImageUrl.value = import.meta.env.VITE_API_BASE_URL + '/storage/' + res.data.images[0].file_path
 
       const img = new Image();
       img.onload = () => {
