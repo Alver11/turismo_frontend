@@ -3,15 +3,17 @@ import { useApi } from '/@src/composable/useApi'
 import { useNotyf } from '/@src/composable/useNotyf'
 import { formatError } from '/@src/composable/useError'
 import { hasPermission } from '/@src/utils/permissions'
-import { ref } from 'vue'
 
 const notify = useNotyf()
 const api = useApi()
+const router = useRouter()
 const modalDeleted = ref(false)
 const modalView = ref(false)
 const currentImageUrl = ref('')
 const idData = ref()
 const touristPlace = ref()
+const touristPlaceName = ref('')
+const updateTableEvent = ref(false)
 const columns = [
   { data: 'id', title: 'ID', visible: false},
   {
@@ -23,7 +25,7 @@ const columns = [
       let imageHtml = '<div class="image-list"><img src="/src/assets/illustrations/images/ImageNotFound.png" alt="Image" /></div>'
       if(data != null && data.length > 0) {
         if(type === 'display') {
-          imageHtml =  '<div class="image-list"><img src="http://localhost/storage/' +  data[0].file_path + '" alt="Image" /></div>';
+          imageHtml =  '<div class="image-list"><img src="'+import.meta.env.VITE_API_BASE_URL + '/storage/' +  data[0].file_path + '" alt="Image" /></div>';
         }
       }
       return imageHtml
@@ -58,33 +60,33 @@ const buttonTable = [
   { button:'edit', permission: 'tourists edit'},
   { button:'delete', permission: 'tourists delete'}
 ]
-interface Galery {
+interface Gallery {
   src: string
   thumbnail: string
   w: number
   h: number
 }
-const items = ref<Galery[]>([])
-
+const items = ref<Gallery[]>([])
+const mapDiv = ref<HTMLElement | null>(null)
+declare var google: any
+let marker: google.maps.Marker | null = null
 const emit = defineEmits(['updateTable'])
-
-
-const updateTableEvent = ref(false)
 
 function handleView(id: number){
   let url = 'tourists/' + id
-  api.get(url).then(result => {
+  api.get(url).then(async result => {
     touristPlace.value = result.data
+    touristPlaceName.value = result.data.name
     const selectedOption = result.data.images.find((image: any) => image.front_page == true);
-    currentImageUrl.value = 'http://localhost/storage/' + selectedOption.file_path
-    if(result.data.images.length > 1) {
+    currentImageUrl.value = import.meta.env.VITE_API_BASE_URL + '/storage/' + selectedOption.file_path
+    if (result.data.images.length > 1) {
       items.value.splice(0, items.value.length)
       result.data.images.forEach((item: any) => {
-        if(!item.front_page) {
+        if (!item.front_page) {
           const img = new Image()
           img.onload = () => {
-            const width = img.width;
-            const height = img.height;
+            const width = img.width
+            const height = img.height
 
             items.value.push({
               src: 'http://localhost/storage/' + item.file_path,
@@ -98,22 +100,76 @@ function handleView(id: number){
         }
 
       })
+    }
+    modalView.value = true
+    await loadGoogleMapsApi()
+    if (modalView.value && mapDiv.value) {
+      await loadMaps(result.data.lat, result.data.lng)
+    }
+  })
+}
 
+//------------- Google Maps --------------------------------------------------------------
+const loadGoogleMapsApi = () => {
+  return new Promise<void>((resolve, reject) => {
+    if (window.google && window.google.maps) {
+      resolve()
+      return
+    }
+    window.initMap = () => {
+      resolve()
     }
 
-    modalView.value = true
+    const script = document.createElement('script')
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDDmEp9TeBUWtHMkgMukAGf8_nnaDFC3HU&callback=initMap`;
+    script.async = true
+    script.defer = true
+    script.onload = () => resolve()
+    script.onerror = () => reject()
+    document.head.appendChild(script)
+  })
+}
+async function loadMaps(latStr: string, lngStr: string){
+  const lat = parseFloat(latStr)
+  const lng = parseFloat(lngStr)
+  if (mapDiv.value) {
+    const center = {
+      lat: lat,
+      lng: lng,
+    }
+    const mapOptions = {
+      center,
+      zoom: 11,
+      streetViewControl: false,
+      mapTypeControl: false,
+    }
+
+    const map = new google.maps.Map(mapDiv.value, mapOptions)
+    if (marker) {
+      marker.setMap(null)
+    }
+    marker = createMarker(map, center)
+    map.setCenter(center)
+  } else {
+    console.error('the element maps no está disponible.')
+  }
+}
+function createMarker(map: google.maps.Map, position: google.maps.LatLngLiteral) {
+  return new google.maps.Marker({
+    position: position,
+    map: map,
   })
 }
 
 function handleEdit(id: number){
-
+  router.push({
+    path: 'tourist/update/'+id
+  })
 }
-
 function handleDelete(id: number){
   idData.value = id
   modalDeleted.value = true
 }
-
 const DeletedTraining = async () => {
   try {
     updateTableEvent.value = false
@@ -134,39 +190,6 @@ const DeletedTraining = async () => {
     notify.error(formatError(err))
   }
 }
-
-/*const items = [
-  {
-    src: 'http://via.placeholder.com/1200x900',
-    thumbnail: 'http://via.placeholder.com/120x90',
-    w: 600,
-    h: 400,
-  },
-  {
-    src: 'http://via.placeholder.com/1200x900',
-    thumbnail: 'http://via.placeholder.com/120x90',
-    w: 600,
-    h: 400,
-  },
-  {
-    src: 'http://via.placeholder.com/1200x900',
-    thumbnail: 'http://via.placeholder.com/120x90',
-    w: 600,
-    h: 400,
-  },
-  {
-    src: 'http://via.placeholder.com/1200x900',
-    thumbnail: 'http://via.placeholder.com/120x90',
-    w: 600,
-    h: 400,
-  },
-  {
-    src: 'http://via.placeholder.com/1200x900',
-    thumbnail: 'http://via.placeholder.com/120x90',
-    w: 600,
-    h: 400,
-  },
-]*/
 </script>
 
 <template>
@@ -185,7 +208,6 @@ const DeletedTraining = async () => {
       },
     ]"
   />
-
   <div
     v-if="hasPermission('tourists create')"
     class="list-flex-toolbar flex-list-v1"
@@ -200,7 +222,6 @@ const DeletedTraining = async () => {
       </VButton>
     </VButtons>
   </div>
-
   <DataTableWrapper
     :columns="columns"
     server-side-url="tourists"
@@ -211,12 +232,10 @@ const DeletedTraining = async () => {
     @edit="handleEdit"
     @delete="handleDelete"
   />
-
   <VModal
-    title="Lugar Turístico"
+    :title="touristPlaceName"
     :open="modalView"
-    size="large"
-    noclose
+    size="big"
     actions="right"
     @close="modalView = false"
   >
@@ -226,33 +245,67 @@ const DeletedTraining = async () => {
         :src="currentImageUrl"
         alt="port"
       >
-      <p class="tourist-title">{{ touristPlace.name }}</p>
-      <VPhotosSwipe class="img-gallery" :items="items" thumbnail-radius="5" />
-      <div
-        v-for="category in touristPlace.categories"
-        :key="category.id"
-      >
-        <VTag
-          color="primary"
-          :label="category.name"
-          rounded
-        />
+      <VPhotosSwipe
+        class="img-gallery"
+        :items="items"
+        thumbnail-radius="5"
+      />
+      <div class="columns is-multiline">
+        <div class="column is-12">
+          <VTag
+            v-for="category in touristPlace.categories"
+            :key="category.id"
+            color="info"
+            :label="category.name"
+            rounded
+          />
+        </div>
       </div>
-      <div>
-        <p>Descripción</p>
-        <p>{{ touristPlace.description }}</p>
+      <hr>
+      <div class="columns is-multiline">
+        <div class="column is-5">
+          <div>
+            <p class="title-wrap">Descripción</p>
+            <p>{{ touristPlace.description }}</p>
+          </div>
+          <VField v-if="touristPlace.attributes.length > 0">
+            <table class="table is-hoverable is-fullwidth">
+              <thead>
+                <tr>
+                  <th scope="col">
+                    Atributo
+                  </th>
+                  <th scope="col">
+                    Información
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="attribute in touristPlace.attributes"
+                  :key="attribute.id"
+                >
+                  <td>{{ attribute.name }}</td>
+                  <td>{{ attribute.pivot.info }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </VField>
+        </div>
+        <div class="column is-7">
+          <VField
+            id="maps"
+          >
+            <div
+              ref="mapDiv"
+              style="width: 100%; height: 200px"
+            />
+          </VField>
+        </div>
       </div>
     </template>
-    <template #action>
-      <VButton
-        color="primary"
-        raised
-      >
-        Aceptar
-      </VButton>
-    </template>
+    <template #action />
   </VModal>
-
   <VModal
     title="Eliminar Datos"
     :open="modalDeleted"
@@ -282,20 +335,29 @@ const DeletedTraining = async () => {
   max-height: 450px;
   border-radius: 8px;
 }
+
 .tourist-title {
-  padding: 15px 10px;
   top: 87px;
-  background-color: var(--primary--dark-color);
-  color: var(--dark-sidebar-dark-12);
+  color: var(--dark-text);
   width: auto;
   min-width: 200px;
-  position: absolute;
-  border-radius: 0 12px 12px 0;
   font: var(--font);
-  font-size: var(--vc-text-lg);
+  font-size: var(--vc-text-2xl);
+  padding-bottom: 10px;
 }
 
 .img-gallery {
   display: flex;
+}
+.gallery-thumbnail a img {
+  max-height: 100px;
+}
+
+.tag.is-info {
+  margin: 2px;
+}
+
+.title-wrap {
+  font-weight: 500;
 }
 </style>

@@ -47,6 +47,13 @@ const routes = [
         props: true,
         meta: { permission: 'tourists create' },
       },
+      {
+        component: () => import('/@src/pages/app/tourist/tourist-update.vue'),
+        path: '/tourist/update/:id',
+        name: 'tourist/update',
+        props: true,
+        meta: { permission: 'tourists edit' },
+      },
       //--------- Events ----------------------------------------------
       {
         component: () => import('/@src/pages/app/events.vue'),

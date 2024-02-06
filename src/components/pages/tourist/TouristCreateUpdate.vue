@@ -6,10 +6,13 @@ import { onMounted, ref } from 'vue'
 import type { RouteParamValue } from 'vue-router'
 import { catchFieldError } from '/@src/utils/api/catchFormErrors'
 import { toTypedSchema } from '@vee-validate/zod'
-import { number, object, string, z as zod } from 'zod'
+import { number, object, string, util, z as zod } from 'zod'
 import type Attribute from '/@src/pages/setting/attribute/attribute.vue'
+import { useI18n } from 'vue-i18n'
+import jsonStringifyReplacer = util.jsonStringifyReplacer
 
 const api = useApi()
+const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const notify = useNotyf()
@@ -33,7 +36,7 @@ const modalAttribute = ref(false)
 const nameAttribute = ref('')
 interface Attribute {
   id: number,
-  name: string,
+  name?: string,
   info: string
 }
 interface ImageFile {
@@ -47,7 +50,6 @@ interface ImageFile {
 }
 const imageSelect = ref<ImageFile[]>([])
 const attributes = ref<Attribute[]>([])
-
 interface RouteParams { id?: string }
 interface userForm {
   name: string,
@@ -57,41 +59,8 @@ interface userForm {
   lat: number,
   lng: number,
   categories: number[],
+  attributes: Attribute[]
 }
-
-const getDataUpdate = async (idValue: string | RouteParamValue[]) => {
-  try {
-    await api.get(`/tourists/${idValue}`).then(function(res) {
-      setFieldValue('name', res.data.name)
-    })
-  } catch (err: any) {
-    catchFieldError(err, setFieldError)
-  }
-}
-
-const validationSchema = toTypedSchema(
-  zod.object({
-    name: string().min(3, { message : 'El nombre debe contener como mínimo 3 letras'}),
-    address: string().min(3, { message : 'La dirección debe contener como mínimo 3 letras'}),
-    description: string().nullish(),
-    district_id: number().nullish(),
-    lat: number().nullish(),
-    lng: number().nullish(),
-    categories: object({})
-  })
-)
-
-type FieldNames = 'name'|'address'|'description'|'district_id'|'lat'|'lng'|'categories'
-const { values, handleSubmit, isSubmitting, setFieldError, setFieldValue } = useForm<userForm>({
-  validationSchema,
-  initialValues: {
-    name: '',
-    address: '',
-    description: '',
-    lat: parseFloat('-25.292584'),
-    lng: parseFloat('-57.578603'),
-  }
-});
 
 onMounted(async () => {
   try {
@@ -102,9 +71,9 @@ onMounted(async () => {
       label: district.name
     }))
     optionsCategories.value = (await api.get('categories')).data.data.map((category:any) => ({
-        value: category.id,
-        label: category.name
-      }))
+      value: category.id,
+      label: category.name
+    }))
     optionsAttribute.value = (await api.get('attributes')).data.data.map((attribute:any) => ({
       value: attribute.id,
       label: attribute.name
@@ -116,10 +85,55 @@ onMounted(async () => {
     console.error('Error al cargar los datos', error)
   }
 })
+const getDataUpdate = async (idValue: string | RouteParamValue[]) => {
+  try {
+    await api.get(`/tourists/${idValue}`).then(function(res) {
+      setFieldValue('name', res.data.name)
+      setFieldValue('address', res.data.address)
+      setFieldValue('description', res.data.description)
+      setFieldValue('lat', parseFloat(res.data.lat))
+      setFieldValue('lng', parseFloat(res.data.lng))
+      loadMaps()
+      districtSelect.value = res.data.district_id
+      categoriesSelect.value = res.data.categories.map((category:any) => category.id)
+      attributes.value = res.data.attributes.map((attribute:any) => {
+        return { 'id': attribute.id, 'name': attribute.name ,'info': attribute.pivot.info }
+      })
+    })
+  } catch (err: any) {
+    catchFieldError(err, setFieldError)
+  }
+}
 
+//------------- Validate Data ------------------------------------------------------------
+const validationSchema = toTypedSchema(
+  zod.object({
+    name: string().min(3, { message : 'El nombre debe contener como mínimo 3 letras'}),
+    address: string().min(3, { message : 'La dirección debe contener como mínimo 3 letras'}),
+    description: string().nullish(),
+    district_id: number().nullish(),
+    lat: number().nullish(),
+    lng: number().nullish(),
+    categories: object({}),
+    attributes: object({})
+  })
+)
+type FieldNames = 'name'|'address'|'description'|'district_id'|'lat'|'lng'|'categories'
+const { values, handleSubmit, isSubmitting, setFieldError, setFieldValue } =
+  useForm<userForm>({
+    validationSchema,
+    initialValues: {
+      name: '',
+      address: '',
+      description: '',
+      lat: parseFloat('-25.292584'),
+      lng: parseFloat('-57.578603'),
+    }
+  }
+)
+
+//------------- Save or Update -----------------------------------------------------------
 const submitHandler = handleSubmit(onSubmit);
-
-//-------------Save or Update ----------------------------
 async function onSubmit(values: userForm) {
   if (isLoading.value) return
   isLoading.value = true
@@ -131,6 +145,9 @@ async function onSubmit(values: userForm) {
     })
     values.district_id = districtSelect.value
     values.categories = categoriesSelect.value
+    values.attributes = attributes.value.map(({ id, info }): Omit<Attribute, 'name'> => {
+      return { id, info };
+    })
     formData.append('data', JSON.stringify(values))
     const url = params.id ? `tourists/${params.id}` : 'tourists'
     const method = params.id ? api.put : api.post
@@ -158,6 +175,7 @@ function handleApiErrors(err: any) {
   notify.error('Error al guardar el formulario');
 }
 
+//------------- Google Maps --------------------------------------------------------------
 const loadGoogleMapsApi = () => {
   return new Promise<void>((resolve, reject) => {
     if (window.google && window.google.maps) {
@@ -191,16 +209,21 @@ async function loadMaps(){
     }
 
     const map = new google.maps.Map(mapDiv.value, mapOptions)
-    getUserLocation()
-      .then((userLatLng) => {
-        marker = createMarker(map, userLatLng)
-        map.setCenter(userLatLng)
-      })
-      .catch((error) => {
-        console.error('Error al obtener la ubicación del usuario:', error)
-        marker = createMarker(map, center)
-        map.setCenter(center)
-      })
+    if(!params.id){
+      getUserLocation()
+        .then((userLatLng) => {
+          marker = createMarker(map, userLatLng)
+          map.setCenter(userLatLng)
+        })
+        .catch((error) => {
+          console.error('Error al obtener la ubicación del usuario:', error)
+          marker = createMarker(map, center)
+          map.setCenter(center)
+        })
+    }else{
+      marker = createMarker(map, center)
+      map.setCenter(center)
+    }
     if (draggableMaps.value) {
       map.addListener('click', function (event: { latLng: any }) {
         if (marker) {
@@ -215,7 +238,6 @@ async function loadMaps(){
     console.error('the element maps no está disposable.')
   }
 }
-
 function getUserLocation(): Promise<google.maps.LatLngLiteral> {
   return new Promise((resolve, reject) => {
     if (navigator.geolocation) {
@@ -245,7 +267,6 @@ function getUserLocation(): Promise<google.maps.LatLngLiteral> {
     }
   })
 }
-
 function createMarker(map: google.maps.Map, position: google.maps.LatLngLiteral) {
   const marker = new google.maps.Marker({
     position: position,
@@ -264,6 +285,7 @@ function createMarker(map: google.maps.Map, position: google.maps.LatLngLiteral)
   return marker
 }
 
+//------------- Add Images ---------------------------------------------------------------
 const onFileSelect = (event: Event): void => {
   const input = event.target as HTMLInputElement;
   if (input.files) {
@@ -301,23 +323,22 @@ const removeFile = (index: number): void => {
   if (index > -1 && index < imageSelect.value.length) {
     const profileStatus = imageSelect.value[index].profile
     imageSelect.value.splice(index, 1);
-    if( profileStatus == true && imageSelect.value.length > 0){
+    if( profileStatus && imageSelect.value.length > 0){
       imageSelect.value[0].profile = true
     }
   }
 }
 
+//------------- Add Attributes -----------------------------------------------------------
 function addAttribute() {
   const selectedOption = optionsAttribute.value.find(option => option.value === attributeSelect.value);
   const attributeName = selectedOption ? selectedOption.label : '--';
   attributes.value?.push({ id: attributeSelect, name: attributeName, info: nameAttribute.value})
   modalAttribute.value = false
 }
-
 function removeAttribute(index: number) {
   attributes.value?.splice(index, 1)
 }
-
 watch(modalAttribute, () => {
   if(modalAttribute.value){
     attributeSelect.value = 0
@@ -347,7 +368,7 @@ const isStuck = computed(() => {
         to: '/tourist',
       },
       {
-        label: 'Nuevo lugar turístico',
+        label: params.id ? 'Actualizar lugar Turístico' : 'Nuevo lugar Tturístico',
       },
     ]"
   />
@@ -494,7 +515,7 @@ const isStuck = computed(() => {
                 color="primary"
                 @click="modalAttribute = true"
               >
-                Agregar atributos
+                {{ t('tourist.add.attribute') }}
               </VButton>
             </div>
             <div class="column is-12">
@@ -646,7 +667,7 @@ const isStuck = computed(() => {
           />
         </VControl>
       </VField>
-      <p>*Observación: Si el atributo no requiere una informacion, no es obligatorio agregarlo</p>
+      <p>{{ t('tourist.observation') }}</p>
     </template>
     <template #action>
       <VButton
@@ -654,7 +675,7 @@ const isStuck = computed(() => {
         raised
         @click="addAttribute"
       >
-        Agregar
+        {{ t('buttons.add') }}
       </VButton>
     </template>
   </VModal>

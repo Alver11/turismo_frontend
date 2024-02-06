@@ -33,5 +33,10 @@
   "components.v-credit-card.expiration-label": "caducidad",
   "components.v-credit-card.cvc-label": "código de seguridad",
   "components.v-credit-card.valid-label": "VÁLIDO",
-  "components.v-credit-card.valid-thru-label": "HASTA"
+  "components.v-credit-card.valid-thru-label": "HASTA",
+
+  "buttons.add": "Agregar",
+
+  "tourist.add.attribute": "Agregar Atributos",
+  "tourist.observation": "*Observación: Si el atributo no requiere una informacion, no es obligatorio agregarlo"
 }

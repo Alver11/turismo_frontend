@@ -33,5 +33,10 @@
   "components.v-credit-card.expiration-label": "expiration",
   "components.v-credit-card.cvc-label": "security code",
   "components.v-credit-card.valid-label": "VALID",
-  "components.v-credit-card.valid-thru-label": "THRU"
+  "components.v-credit-card.valid-thru-label": "THRU",
+
+  "buttons.add": "Add",
+
+  "tourist.add.attribute": "Add Attributes",
+  "tourist.observation": "*Observation: If the attribute does not require information, it is not mandatory to add it"
 }

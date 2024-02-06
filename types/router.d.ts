@@ -46,6 +46,7 @@ declare module 'vue-router/auto/routes' {
     '/app/events': RouteRecordInfo<'/app/events', '/app/events', Record<never, never>, Record<never, never>>,
     '/app/tourist/tourist': RouteRecordInfo<'/app/tourist/tourist', '/app/tourist/tourist', Record<never, never>, Record<never, never>>,
     '/app/tourist/tourist-create': RouteRecordInfo<'/app/tourist/tourist-create', '/app/tourist/tourist-create', Record<never, never>, Record<never, never>>,
+    '/app/tourist/tourist-update': RouteRecordInfo<'/app/tourist/tourist-update', '/app/tourist/tourist-update', Record<never, never>, Record<never, never>>,
     '/auth': RouteRecordInfo<'/auth', '/auth', Record<never, never>, Record<never, never>>,
     '/auth/login': RouteRecordInfo<'/auth/login', '/auth/login', Record<never, never>, Record<never, never>>,
     '/setting/attribute/attribute': RouteRecordInfo<'/setting/attribute/attribute', '/setting/attribute/attribute', Record<never, never>, Record<never, never>>,
